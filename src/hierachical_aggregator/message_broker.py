@@ -53,6 +53,12 @@ class MessageQueue:
     def _recieve(self, block):
         raise NotImplementedError("Subclass must provide _recieve method")
 
+    def queue_length(self):
+        return self._queue_length()
+
+    def _queue_length(self):
+        raise NotImplementedError("Subclass must provide _queue_length method")
+
 
 class RedisMessageQueue(MessageQueue):
     def __init__(self, schema, name, host, port):
@@ -81,3 +87,6 @@ class RedisMessageQueue(MessageQueue):
             message = json.loads(message)
 
         return message
+
+    def _queue_length(self):
+        return self._redis.llen(self._name)

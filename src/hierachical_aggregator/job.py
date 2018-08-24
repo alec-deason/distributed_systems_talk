@@ -5,7 +5,7 @@ JOB_SCHEMA = MessageSchema({"node_name": str, "parent_node_name": str})
 
 
 def create_job(node_name, parent_node_name, children, host, port):
-    sem = Semaphore(node_name, host, port)
+    sem = Semaphore(f"{node_name}_lock", host, port)
     sem.add_dependencies(*children)
     q = RedisMessageQueue(JOB_SCHEMA, "job_queue", host, port)
     q.send({"node_name": node_name, "parent_node_name": parent_node_name})
@@ -32,3 +32,8 @@ def finish_job(node_name, parent_node_name, host, port):
 def give_up_job(node_name, parent_node_name, host, port):
     q = RedisMessageQueue(JOB_SCHEMA, "job_queue", host, port)
     q.send({"node_name": node_name, "parent_node_name": parent_node_name})
+
+
+def jobs_remaining(host, port):
+    q = RedisMessageQueue(JOB_SCHEMA, "job_queue", host, port)
+    return q.queue_length()
